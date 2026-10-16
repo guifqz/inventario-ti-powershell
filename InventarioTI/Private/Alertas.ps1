@@ -69,7 +69,7 @@ function Test-NaoAtivado {
     )
 
     if ([string]::IsNullOrWhiteSpace($Ativacao)) { return $false }
-    $Ativacao -eq 'Nao licenciado' -or $Ativacao -eq 'Notificacao' -or $Ativacao -like 'Periodo de carencia*'
+    $Ativacao -eq 'Não licenciado' -or $Ativacao -eq 'Notificação' -or $Ativacao -like 'Período de carência*'
 }
 
 function Test-UptimeAlto {

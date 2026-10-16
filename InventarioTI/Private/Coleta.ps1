@@ -196,13 +196,13 @@ function Get-StatusAtivacao {
     if (-not $licenca) { return 'Sem licenca' }
 
     switch ([int]$licenca.LicenseStatus) {
-        0 { 'Nao licenciado' }
+        0 { 'Não licenciado' }
         1 { 'Ativado' }
-        2 { 'Periodo de carencia inicial' }
-        3 { 'Periodo de carencia adicional' }
-        4 { 'Periodo de carencia (nao genuino)' }
-        5 { 'Notificacao' }
-        6 { 'Periodo de carencia estendido' }
+        2 { 'Período de carência inicial' }
+        3 { 'Período de carência adicional' }
+        4 { 'Período de carência (não genuíno)' }
+        5 { 'Notificação' }
+        6 { 'Período de carência estendido' }
         default { 'Desconhecido' }
     }
 }

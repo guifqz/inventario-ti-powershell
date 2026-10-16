@@ -202,9 +202,9 @@ Describe 'Get-InventarioMaquina' {
 
 Describe 'Get-StatusAtivacao' {
     It 'traduz o LicenseStatus' -TestCases @(
-        @{ Codigo = 0; Texto = 'Nao licenciado' }
+        @{ Codigo = 0; Texto = 'Não licenciado' }
         @{ Codigo = 1; Texto = 'Ativado' }
-        @{ Codigo = 5; Texto = 'Notificacao' }
+        @{ Codigo = 5; Texto = 'Notificação' }
     ) {
         param($Codigo, $Texto)
         InModuleScope InventarioTI -Parameters @{ Codigo = $Codigo; Texto = $Texto } {

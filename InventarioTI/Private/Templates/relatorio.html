@@ -6,31 +6,22 @@
 <title>{{TITULO}}</title>
 <style>
 :root {
-  --bg:#f5f6f8; --surface:#fff; --surface2:#f8fafc; --text:#0f172a; --muted:#64748b; --line:#e2e8f0;
-  --accent:#4f46e5; --accent-soft:#eef2ff;
+  --bg:#f3f6fb; --surface:#fff; --surface2:#f7f9fc; --text:#0f172a; --muted:#5b6b82; --line:#e3e8f0;
+  --accent:#2563eb; --accent-soft:#eaf1ff; --accent-line:#c9dafc;
   --ok:#15803d; --ok-soft:#dcfce7; --warn:#b45309; --warn-soft:#fef3c7; --bad:#b91c1c; --bad-soft:#fee2e2; --info:#1d4ed8; --info-soft:#dbeafe;
-  --c1:#4f46e5; --c2:#0ea5e9; --c3:#10b981; --c4:#f59e0b; --c5:#ef4444; --c6:#8b5cf6; --c7:#64748b; --c8:#14b8a6;
+  --c1:#2563eb; --c2:#0ea5e9; --c3:#10b981; --c4:#f59e0b; --c5:#ef4444; --c6:#8b5cf6; --c7:#64748b; --c8:#14b8a6;
   --shadow:0 1px 2px rgba(15,23,42,.06),0 4px 14px rgba(15,23,42,.05);
   --shadow-lg:0 10px 40px rgba(15,23,42,.25);
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg:#0b1020; --surface:#121a2e; --surface2:#16203a; --text:#e5e9f2; --muted:#94a3b8; --line:#243049;
-    --accent:#818cf8; --accent-soft:#1e2447;
-    --ok:#4ade80; --ok-soft:#12331f; --warn:#fbbf24; --warn-soft:#38290c; --bad:#f87171; --bad-soft:#3b1717; --info:#60a5fa; --info-soft:#14284d;
-    --c1:#818cf8; --c2:#38bdf8; --c3:#34d399; --c4:#fbbf24; --c5:#f87171; --c6:#a78bfa; --c7:#94a3b8; --c8:#2dd4bf;
-    --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.25); --shadow-lg:0 10px 40px rgba(0,0,0,.6);
-  }
-}
 :root[data-theme="dark"] {
   --bg:#0b1020; --surface:#121a2e; --surface2:#16203a; --text:#e5e9f2; --muted:#94a3b8; --line:#243049;
-  --accent:#818cf8; --accent-soft:#1e2447;
+  --accent:#60a5fa; --accent-soft:#16244a; --accent-line:#2b3f6e;
   --ok:#4ade80; --ok-soft:#12331f; --warn:#fbbf24; --warn-soft:#38290c; --bad:#f87171; --bad-soft:#3b1717; --info:#60a5fa; --info-soft:#14284d;
   --c1:#818cf8; --c2:#38bdf8; --c3:#34d399; --c4:#fbbf24; --c5:#f87171; --c6:#a78bfa; --c7:#94a3b8; --c8:#2dd4bf;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.25); --shadow-lg:0 10px 40px rgba(0,0,0,.6);
 }
 * { box-sizing:border-box; }
-html { color-scheme:light dark; }
+html { color-scheme:light; }
 :root[data-theme="light"] { color-scheme:light; }
 :root[data-theme="dark"] { color-scheme:dark; }
 body { margin:0; background:var(--bg); color:var(--text); font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; -webkit-font-smoothing:antialiased; }
@@ -49,19 +40,22 @@ header.top .meta { color:var(--muted); margin-top:2px; }
 .btn:hover { border-color:var(--accent); }
 .btn svg { width:16px; height:16px; flex:none; }
 
-.kpis { display:grid; grid-template-columns:repeat(auto-fill,minmax(172px,1fr)); gap:12px; margin-bottom:20px; }
+.kpis { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; }
 .kpi { position:relative; text-align:left; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px 16px 12px; box-shadow:var(--shadow); overflow:hidden; transition:transform .12s,border-color .12s; }
 .kpi::before { content:""; position:absolute; inset:0 auto 0 0; width:4px; background:var(--tone,var(--muted)); }
 .kpi:hover { transform:translateY(-1px); border-color:var(--tone,var(--accent)); }
+.kpi .h b { color:var(--accent); font-weight:500; opacity:0; transition:opacity .12s; }
+.kpi:hover .h b, .kpi[aria-pressed="true"] .h b { opacity:1; }
 .kpi[aria-pressed="true"] { border-color:var(--tone,var(--accent)); box-shadow:0 0 0 2px var(--tone,var(--accent)); }
 .kpi .n { font-size:30px; font-weight:700; line-height:1.1; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
-.kpi .l { color:var(--muted); font-size:12.5px; margin-top:2px; }
+.kpi .l { color:var(--text); font-size:13px; font-weight:500; margin-top:2px; }
 .kpi .h { color:var(--muted); font-size:11.5px; margin-top:6px; }
 .kpi.tone-ok { --tone:var(--ok); } .kpi.tone-bad { --tone:var(--bad); } .kpi.tone-warn { --tone:var(--warn); } .kpi.tone-info { --tone:var(--info); } .kpi.tone-acc { --tone:var(--accent); }
 .kpi.zero .n { color:var(--muted); }
+@media (max-width:640px) { .kpis { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; } .kpi { padding:12px 12px 10px; } .kpi .n { font-size:24px; } .kpi .l { font-size:12.5px; } .hint { font-size:13px; } }
 .kpi.zero::before { opacity:.35; }
 
-.charts { display:grid; grid-template-columns:repeat(auto-fit,minmax(310px,1fr)); gap:12px; margin-bottom:20px; }
+.charts { display:grid; grid-template-columns:repeat(auto-fit,minmax(310px,1fr)); gap:12px; }
 .card { background:var(--surface); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); padding:16px; }
 .card h2 { margin:0 0 12px; font-size:13px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
 .chart svg { display:block; width:100%; height:auto; }
@@ -80,9 +74,9 @@ header.top .meta { color:var(--muted); margin-top:2px; }
 .donut-wrap .legend { flex:1; min-width:140px; margin:0; }
 
 .toolbar { display:flex; flex-wrap:wrap; gap:10px 12px; align-items:center; padding:14px 16px; border-bottom:1px solid var(--line); }
-.search { position:relative; flex:1 1 260px; max-width:420px; }
+.search { position:relative; flex:1 1 300px; max-width:480px; }
 .search svg { position:absolute; left:11px; top:50%; width:16px; height:16px; transform:translateY(-50%); color:var(--muted); pointer-events:none; }
-.search input { width:100%; height:36px; padding:0 12px 0 34px; background:var(--surface2); border:1px solid var(--line); border-radius:10px; }
+.search input { width:100%; height:40px; font-size:14.5px; padding:0 12px 0 34px; background:var(--surface2); border:1px solid var(--line); border-radius:10px; }
 .chips { display:flex; flex-wrap:wrap; gap:6px; }
 .chip { height:28px; padding:0 11px; background:var(--surface2); border:1px solid var(--line); border-radius:999px; font-size:12.5px; color:var(--muted); }
 .chip:hover { border-color:var(--accent); color:var(--text); }
@@ -149,12 +143,26 @@ dl.kv dd { margin:0; overflow-wrap:anywhere; }
 .swlist div:first-child { border-top:0; }
 .swlist span:last-child { color:var(--muted); white-space:nowrap; }
 .note { color:var(--muted); font-size:12.5px; }
+.hint { display:flex; gap:10px; align-items:flex-start; background:var(--accent-soft); border:1px solid var(--accent-line); border-radius:12px; padding:11px 14px; margin:0 0 22px; font-size:13.5px; }
+.hint svg { width:18px; height:18px; flex:none; color:var(--accent); margin-top:1px; }
+.hint b { font-weight:600; }
+.grp { margin-bottom:18px; }
+.grp-t { margin:0 0 8px; font-size:14px; font-weight:600; }
+.grp-t span { color:var(--muted); font-weight:400; font-size:12.5px; margin-left:6px; }
+.sect-t { display:flex; align-items:baseline; gap:8px; margin:26px 0 10px; font-size:17px; font-weight:700; letter-spacing:-.01em; }
+.sect-t span { color:var(--muted); font-weight:400; font-size:13px; }
+td.go { white-space:nowrap; color:var(--accent); font-weight:600; font-size:13px; text-align:right; }
+tbody tr:hover td.go { text-decoration:underline; }
+.resumo { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+.tile { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:10px 12px; min-width:0; }
+.tile .l { color:var(--muted); font-size:12px; }
+.tile .v { font-weight:600; overflow-wrap:anywhere; }
 footer.foot { margin-top:28px; color:var(--muted); font-size:12px; text-align:center; }
 
 @media print {
   @page { size:A4 landscape; margin:10mm; }
   body { background:#fff; color:#000; font-size:11px; }
-  .actions, .toolbar .search, .chips, .linkbtn, .overlay, .drawer, .charts { display:none !important; }
+  .actions, .toolbar .search, .chips, .linkbtn, .overlay, .drawer, .charts, .hint, .sect-t.graf, td.go, th.go { display:none !important; }
   .kpi, .card { box-shadow:none; break-inside:avoid; }
   .tablewrap { max-height:none; overflow:visible; }
   table { min-width:0; }
@@ -178,14 +186,17 @@ footer.foot { margin-top:28px; color:var(--muted); font-size:12px; text-align:ce
     </div>
   </header>
 
-  <section class="kpis" id="kpis" aria-label="Indicadores"></section>
-  <section class="charts" id="charts" aria-label="Gráficos"></section>
+  <div class="hint" role="note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+    <div><b>Como usar:</b> clique em um indicador para filtrar a lista, digite na busca para achar um computador pelo nome, usuário ou serial, e clique em uma linha para ver tudo sobre aquele computador.</div></div>
 
+  <section id="kpis" aria-label="Indicadores"></section>
+
+  <h2 class="sect-t">Computadores <span id="count-top"></span></h2>
   <section class="card table" aria-label="Máquinas">
     <div class="toolbar">
       <label class="search"><span class="sr-only">Buscar</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-        <input id="q" type="search" placeholder="Buscar por nome, usuário, modelo, serial, IP, OU..." autocomplete="off">
+        <input id="q" type="search" placeholder="Buscar computador, usuário, modelo, serial ou IP" autocomplete="off">
       </label>
       <div class="chips" id="chips" role="group" aria-label="Filtros rápidos"></div>
       <div class="count"><span id="count"></span> <button class="linkbtn" id="clear" type="button" hidden>Limpar filtros</button></div>
@@ -196,9 +207,12 @@ footer.foot { margin-top:28px; color:var(--muted); font-size:12px; text-align:ce
         <thead><tr id="thead"></tr></thead>
         <tbody id="tbody"></tbody>
       </table>
-      <div class="empty" id="vazio" hidden>Nenhuma máquina corresponde aos filtros.</div>
+      <div class="empty" id="vazio" hidden>Nenhum computador encontrado com esses filtros.</div>
     </div>
   </section>
+
+  <h2 class="sect-t graf">Estatísticas <span>clique em uma barra ou fatia para filtrar a lista</span></h2>
+  <section class="charts" id="charts" aria-label="Gráficos"></section>
 
   <footer class="foot">Relatório estático e autocontido, sem dependências externas. Gerado pelo módulo InventarioTI.</footer>
 </div>
@@ -237,7 +251,7 @@ function dias(iso) { if (!iso) return null; var d = new Date(iso); if (isNaN(d))
 
 var STATUS = {
   Coletado: { t: 'Coletado', c: 'ok' }, Offline: { t: 'Offline', c: 'bad' }, AcessoNegado: { t: 'Acesso negado', c: 'warn' },
-  SemWinRMeDcom: { t: 'Sem WinRM/DCOM', c: 'warn' }, Erro: { t: 'Erro', c: 'warn' }, NaoInventariado: { t: 'Não inventariado', c: 'info' }
+  SemWinRMeDcom: { t: 'Sem acesso remoto', c: 'warn' }, Erro: { t: 'Erro', c: 'warn' }, NaoInventariado: { t: 'Não inventariado', c: 'info' }
 };
 function st(m) { return STATUS[m.status] || { t: m.status || '-', c: '' }; }
 var SAUDE = { Healthy: 'Saudável', Warning: 'Atenção', Unhealthy: 'Não saudável', Unknown: 'Desconhecido' };
@@ -274,26 +288,26 @@ var temAD = DADOS.some(function (m) { return m.noAD; });
 var COBRE = function (m) { return m.status === 'Coletado'; };
 
 var KPIS = [
-  { id: 'total', t: temAD ? 'Total no AD' : 'Total de máquinas', tone: 'acc', fn: function (m) { return temAD ? m.noAD : true; }, reset: true },
-  { id: 'inv', t: 'Inventariados', tone: 'ok', fn: COBRE },
-  { id: 'sem', t: 'Offline / sem coleta', tone: 'bad', fn: function (m) { return !COBRE(m); } },
-  { id: 'so', t: 'SO fora de suporte', tone: 'bad', fn: function (m) { return temAlerta(m, ['SO_FORA_SUPORTE']); } },
-  { id: 'disco', t: 'Disco crítico (< ' + META.limiteDisco + '% livre)', tone: 'bad', fn: function (m) { return temAlerta(m, ['DISCO_BAIXO']); } },
-  { id: 'av', t: 'Sem antivírus ativo', tone: 'bad', fn: function (m) { return temAlerta(m, ['AV_AUSENTE', 'AV_DESATIVADO']); } },
-  { id: 'ativ', t: 'Windows não ativado', tone: 'warn', fn: function (m) { return temAlerta(m, ['NAO_ATIVADO']); } },
-  { id: 'ram', t: 'RAM < ' + META.limiteRAMGB + ' GB', tone: 'warn', fn: function (m) { return temAlerta(m, ['RAM_BAIXA']); } },
-  { id: 'hdd', t: 'HDD no sistema', tone: 'warn', fn: function (m) { return temAlerta(m, ['DISCO_SISTEMA_HDD']); } },
-  { id: 'inativo', t: 'Possivelmente inativos', tone: 'info', fn: function (m) { return temAlerta(m, ['AD_INATIVO']); } }
+  { id: 'total', g: 1, t: temAD ? 'Computadores no AD' : 'Computadores', tone: 'acc', fn: function (m) { return temAD ? m.noAD : true; }, reset: true },
+  { id: 'inv', g: 1, t: 'Com dados coletados', tone: 'ok', fn: COBRE },
+  { id: 'sem', g: 1, t: 'Sem dados (offline ou sem acesso)', tone: 'bad', fn: function (m) { return !COBRE(m); } },
+  { id: 'so', g: 2, t: 'Windows sem suporte', tone: 'bad', fn: function (m) { return temAlerta(m, ['SO_FORA_SUPORTE']); } },
+  { id: 'disco', g: 2, t: 'Disco quase cheio (< ' + META.limiteDisco + '% livre)', tone: 'bad', fn: function (m) { return temAlerta(m, ['DISCO_BAIXO']); } },
+  { id: 'av', g: 2, t: 'Sem antivírus ativo', tone: 'bad', fn: function (m) { return temAlerta(m, ['AV_AUSENTE', 'AV_DESATIVADO']); } },
+  { id: 'ativ', g: 2, t: 'Windows não ativado', tone: 'warn', fn: function (m) { return temAlerta(m, ['NAO_ATIVADO']); } },
+  { id: 'ram', g: 2, t: 'Pouca memória (< ' + META.limiteRAMGB + ' GB)', tone: 'warn', fn: function (m) { return temAlerta(m, ['RAM_BAIXA']); } },
+  { id: 'hdd', g: 2, t: 'Disco lento (HDD)', tone: 'warn', fn: function (m) { return temAlerta(m, ['DISCO_SISTEMA_HDD']); } },
+  { id: 'inativo', g: 2, t: 'Sem uso há mais de 90 dias', tone: 'info', fn: function (m) { return temAlerta(m, ['AD_INATIVO']); } }
 ];
 
 var CHIPS = [
   { id: 'todos', t: 'Todos', fn: function () { return true; } },
-  { id: 'col', t: 'Coletados', fn: COBRE },
+  { id: 'col', t: 'Com dados', fn: COBRE },
   { id: 'off', t: 'Offline', fn: function (m) { return m.status === 'Offline'; } },
   { id: 'acesso', t: 'Sem acesso', fn: function (m) { return ['AcessoNegado', 'SemWinRMeDcom', 'Erro'].indexOf(m.status) >= 0; } },
   { id: 'nao', t: 'Não inventariados', fn: function (m) { return m.status === 'NaoInventariado'; } },
   { id: 'alerta', t: 'Com alertas', fn: function (m) { return m.alertas.length > 0; } },
-  { id: 'local', t: 'Coletor local', fn: function (m) { return m.fonte === 'Local' && m.status === 'Coletado'; } }
+  { id: 'local', t: 'Via coletor local', fn: function (m) { return m.fonte === 'Local' && m.status === 'Coletado'; } }
 ];
 
 var COLS = [
@@ -301,11 +315,10 @@ var COLS = [
   { k: 'usuario', t: 'Usuário', v: function (m) { return m.usuario; } },
   { k: 'modelo', t: 'Modelo', v: function (m) { return ((m.fabricante || '') + ' ' + (m.modelo || '')).trim(); } },
   { k: 'so', t: 'Sistema', v: function (m) { return m.so || m.soAD; } },
-  { k: 'cpu', t: 'CPU', v: function (m) { return m.cpu; } },
   { k: 'ram', t: 'RAM', num: true, v: function (m) { return m.ramGB; } },
   { k: 'disco', t: 'Disco do sistema', num: true, v: function (m) { var d = discoSis(m); return d ? d.pct : null; } },
   { k: 'boot', t: 'Último boot', num: true, v: function (m) { return m.boot ? new Date(m.boot).getTime() : null; } },
-  { k: 'status', t: 'Coleta', v: function (m) { return st(m).t; } },
+  { k: 'status', t: 'Situação', v: function (m) { return st(m).t; } },
   { k: 'alertas', t: 'Alertas', num: true, v: function (m) { return m.alertas.length; } }
 ];
 
@@ -358,31 +371,22 @@ function linha(m) {
     '<td><div class="ell" title="' + esc(m.usuario || '') + '">' + esc((m.usuario || '').replace(/^.*\\/, '')) + '</div></td>' +
     '<td><div class="ell">' + esc(((m.fabricante || '') + ' ' + (m.modelo || '')).trim()) + '</div><div class="sub">' + esc(m.serial || '') + '</div></td>' +
     '<td><div class="ell">' + esc((so || '').replace(/^Microsoft\s+/, '').replace(/\bProfessional\b/, 'Pro').replace(/\s+(Standard|Datacenter|Evaluation)\b/g, '')) + '</div><div class="sub">' + (ok && m.soBuild ? 'build ' + esc(m.soBuild) : (so ? 'dado do AD' : '')) + '</div></td>' +
-    '<td><div class="ell">' + esc(cpuCurta(m.cpu)) + '</div></td>' +
     '<td class="num">' + (m.ramGB != null ? nf0.format(Math.round(m.ramGB)) + ' GB' : '<span class="sub">-</span>') + '</td>' +
     '<td>' + disco + '</td>' +
     '<td class="num">' + (m.boot ? dt(m.boot, true) : '<span class="sub">-</span>') + '</td>' +
     '<td><span class="tag ' + s.c + '">' + esc(s.t) + '</span>' + (m.fonte === 'Local' && ok ? '<span class="src" title="Dados do coletor local">local</span>' : '') + '</td>' +
     '<td><div class="tags">' + m.alertas.slice(0, 2).map(chip).join('') +
     (m.alertas.length > 2 ? '<span class="tag" title="' + esc(m.alertas.slice(2).map(function (a) { return a.r; }).join(', ')) + '">+' + (m.alertas.length - 2) + '</span>' : '') +
-    '</div></td></tr>';
+    '</div></td><td class="go">Ver detalhes ›</td></tr>';
 }
 
-function cpuCurta(cpu) {
-  return (cpu || '')
-    .replace(/\((R|TM)\)/g, '')
-    .replace(/\s*@.*$/, '')
-    .replace(/\s+CPU\b/, '')
-    .replace(/^Intel\s+Core\s+/i, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
 
 function desenhar() {
   $('tbody').innerHTML = visiveis.map(linha).join('');
   $('vazio').hidden = visiveis.length > 0;
   $('tabela').hidden = visiveis.length === 0;
-  $('count').textContent = visiveis.length + ' de ' + DADOS.length + ' máquinas';
+  $('count').textContent = visiveis.length + ' de ' + DADOS.length + ' computadores';
+  $('count-top').textContent = visiveis.length === DADOS.length ? '' : 'mostrando ' + visiveis.length + ' de ' + DADOS.length;
   var filtrando = estado.q || estado.kpi || estado.chip !== 'todos' || estado.extra;
   $('clear').hidden = !filtrando;
   desenharKpis(); desenharChips(); desenharCabecalho();
@@ -391,18 +395,23 @@ function desenhar() {
 function desenharCabecalho() {
   $('thead').innerHTML = COLS.map(function (c) {
     var ativo = estado.ordem === c.k;
-    return '<th scope="col" aria-sort="' + (ativo ? (estado.dir > 0 ? 'ascending' : 'descending') : 'none') + '"><button type="button" data-k="' + c.k + '">' + esc(c.t) + '<span class="ar" aria-hidden="true">' + (ativo && estado.dir < 0 ? '▼' : '▲') + '</span></button></th>';
-  }).join('');
+    return '<th scope="col" aria-sort="' + (ativo ? (estado.dir > 0 ? 'ascending' : 'descending') : 'none') + '"><button type="button" data-k="' + c.k + '" title="Ordenar por ' + esc(c.t.toLowerCase()) + '">' + esc(c.t) + '<span class="ar" aria-hidden="true">' + (ativo && estado.dir < 0 ? '▼' : '▲') + '</span></button></th>';
+  }).join('') + '<th scope="col" class="go"><span class="sr-only">Detalhes</span></th>';
 }
 
 function desenharKpis() {
   var total = DADOS.length;
-  $('kpis').innerHTML = KPIS.map(function (k) {
+  function cartao(k) {
     var n = DADOS.filter(k.fn).length;
     var h = k.id === 'total' ? (temAD ? DADOS.length - n + ' fora do AD' : 'no relatório') : (total ? Math.round(n * 100 / total) + '% do total' : '');
     if (k.id === 'total' && !temAD) h = 'no relatório';
-    return '<button type="button" class="kpi tone-' + k.tone + (n === 0 && !k.reset ? ' zero' : '') + '" data-k="' + k.id + '" aria-pressed="' + (estado.kpi === k.id) + '"><div class="n">' + nf0.format(n) + '</div><div class="l">' + esc(k.t) + '</div><div class="h">' + esc(h) + '</div></button>';
-  }).join('');
+    var acao = k.reset ? '' : (estado.kpi === k.id ? ' <b>· limpar filtro</b>' : ' <b>· ver lista</b>');
+    return '<button type="button" class="kpi tone-' + k.tone + (n === 0 && !k.reset ? ' zero' : '') + '" data-k="' + k.id + '" aria-pressed="' + (estado.kpi === k.id) + '"><div class="n">' + nf0.format(n) + '</div><div class="l">' + esc(k.t) + '</div><div class="h">' + esc(h) + acao + '</div></button>';
+  }
+  function grupo(g, titulo, dica) {
+    return '<div class="grp"><h2 class="grp-t">' + titulo + '<span>' + dica + '</span></h2><div class="kpis">' + KPIS.filter(function (k) { return k.g === g; }).map(cartao).join('') + '</div></div>';
+  }
+  $('kpis').innerHTML = grupo(1, 'Visão geral', '') + grupo(2, 'Precisa de atenção', 'clique para ver quais computadores');
 }
 
 function desenharChips() {
@@ -503,6 +512,25 @@ function bytesGB(n) { return n == null ? '' : (n >= 1000 ? nf1.format(n / 1024) 
 function detalhe(m) {
   var s = st(m), ok = COBRE(m), h = '';
 
+  if (ok) {
+    var dsis = discoSis(m);
+    var tiles = [
+      ['Usuário', m.usuario ? m.usuario.replace(/^.*\\/, '') : 'Ninguém logado'],
+      ['Windows', (m.so || m.soAD || '-').replace(/^Microsoft\s+/, '')],
+      ['Memória', m.ramGB != null ? nf0.format(Math.round(m.ramGB)) + ' GB' : '-'],
+      ['Disco do sistema', dsis ? nf1.format(dsis.pct) + '% livre (' + (dsis.tipo || '?') + ')' : '-'],
+      ['Modelo', ((m.fabricante || '') + ' ' + (m.modelo || '')).trim() || '-'],
+      ['IP', m.ip || '-']
+    ];
+    h += '<div class="resumo">' + tiles.map(function (x) { return '<div class="tile"><div class="l">' + esc(x[0]) + '</div><div class="v">' + esc(x[1]) + '</div></div>'; }).join('') + '</div>';
+  }
+
+  if (m.alertas.length) {
+    h += sec('Precisa de atenção (' + m.alertas.length + ')', m.alertas.map(function (a) {
+      return '<div class="alert ' + esc(a.g) + '"><b>' + esc(a.r) + '</b>' + esc(a.t) + '<div class="fix">Correção sugerida: ' + esc(a.f) + '</div></div>';
+    }).join(''));
+  }
+
   h += sec('Identidade', kv([
     ['Computador', esc(m.nome)], ['Nome DNS', esc(m.dns)], ['Usuário', esc(m.usuario)],
     ['OU', esc(m.ou)], ['Descrição (AD)', esc(m.descricaoAD)],
@@ -510,12 +538,6 @@ function detalhe(m) {
     ['Criado no AD', esc(dt(m.criadoAD, true))],
     ['Conta no AD', m.noAD ? (m.habilitado === false ? 'Desativada' : 'Ativa') : 'Fora do AD']
   ]));
-
-  if (m.alertas.length) {
-    h += sec('Alertas (' + m.alertas.length + ')', m.alertas.map(function (a) {
-      return '<div class="alert ' + esc(a.g) + '"><b>' + esc(a.r) + '</b>' + esc(a.t) + '<div class="fix">Correção sugerida: ' + esc(a.f) + '</div></div>';
-    }).join(''));
-  }
 
   if (!ok) {
     h += sec('Coleta', kv([['Status', '<span class="tag ' + s.c + '">' + esc(s.t) + '</span>'], ['O que fazer', esc(m.mensagem)], ['Detalhe técnico', esc(m.erro)]]) +
@@ -634,12 +656,13 @@ function exportarCsv() {
 function tema(t, salvar) {
   document.documentElement.setAttribute('data-theme', t);
   $('theme-label').textContent = t === 'dark' ? 'Tema claro' : 'Tema escuro';
+  document.documentElement.style.colorScheme = t;
   if (salvar) { try { localStorage.setItem('inventario-tema', t); } catch (e) { /* sem armazenamento */ } }
 }
 function temaInicial() {
   var t = null;
   try { t = localStorage.getItem('inventario-tema'); } catch (e) { t = null; }
-  if (t !== 'dark' && t !== 'light') t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  if (t !== 'dark' && t !== 'light') t = 'light';
   tema(t, false);
 }
 
@@ -702,7 +725,7 @@ function ligar() {
 
 DADOS.forEach(function (m) { m.alertas = m.alertas || []; m.discos = m.discos || []; m.rede = m.rede || []; m.software = m.software || []; m.remoto = m.remoto || []; });
 temaInicial();
-$('meta').textContent = 'Gerado em ' + dt(META.geradoEm) + ' · ' + DADOS.length + ' máquinas · ' + DADOS.filter(COBRE).length + ' inventariadas · ' + DADOS.filter(function (m) { return m.alertas.length; }).length + ' com alertas';
+$('meta').textContent = 'Atualizado em ' + dt(META.geradoEm) + ' · ' + DADOS.length + ' computadores · ' + DADOS.filter(COBRE).length + ' com dados · ' + DADOS.filter(function (m) { return m.alertas.length; }).length + ' precisam de atenção';
 montarGraficos();
 ligar();
 aplicar();

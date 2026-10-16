@@ -85,9 +85,9 @@ Describe 'Get-StatusProtecaoAV' {
 Describe 'Test-NaoAtivado e Test-UptimeAlto' {
     It 'identifica ativacao pendente' -TestCases @(
         @{ Texto = 'Ativado';                      Esperado = $false }
-        @{ Texto = 'Nao licenciado';               Esperado = $true }
-        @{ Texto = 'Notificacao';                  Esperado = $true }
-        @{ Texto = 'Periodo de carencia inicial';  Esperado = $true }
+        @{ Texto = 'Não licenciado';               Esperado = $true }
+        @{ Texto = 'Notificação';                  Esperado = $true }
+        @{ Texto = 'Período de carência inicial';  Esperado = $true }
         @{ Texto = 'Indisponivel';                 Esperado = $false }
         @{ Texto = $null;                          Esperado = $false }
     ) {

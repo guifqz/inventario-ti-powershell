@@ -105,7 +105,8 @@ Describe 'Export-InventarioRelatorio' {
 
         It 'traz titulo, tema e filtros do relatorio' {
             $html | Should -Match '<title>Inventário de TI</title>'
-            $html | Should -Match 'prefers-color-scheme'
+            $html | Should -Match 'data-theme="dark"'
+            $html | Should -Not -Match 'prefers-color-scheme'
             $html | Should -Match '@media print'
             $html | Should -Match 'Exportar CSV'
         }
