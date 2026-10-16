@@ -1,0 +1,16 @@
+﻿# Saidas geradas
+saida/
+relatorios/
+*.log
+testResults.xml
+coverage.xml
+
+# Listas de maquinas reais (use computadores.exemplo.txt como modelo)
+computadores.txt
+
+# Editor / SO
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+*.swp

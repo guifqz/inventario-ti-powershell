@@ -1,0 +1,5 @@
+﻿# Um computador por linha. Linhas vazias e iniciadas por # sao ignoradas.
+PC-FINANCEIRO-01
+PC-FINANCEIRO-02
+PC-RH-01
+SRV-ARQUIVOS-01
