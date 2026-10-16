@@ -244,8 +244,9 @@ function ConvertTo-JsonParaHtml {
     )
 
     $json = ConvertTo-Json -InputObject $Objeto -Depth 8 -Compress
-    $json.Replace('<', '<').Replace('>', '>').Replace('&', '&').
-    Replace([string][char]0x2028, ' ').Replace([string][char]0x2029, ' ')
+    # O 5.1 ja escapa < > & sozinho, o 7 nao; eles so aparecem dentro de strings JSON, entao \uXXXX e seguro.
+    $json.Replace('<', '\u003c').Replace('>', '\u003e').Replace('&', '\u0026').
+    Replace([string][char]0x2028, '\u2028').Replace([string][char]0x2029, '\u2029')
 }
 
 function ConvertTo-RelatorioHtml {
