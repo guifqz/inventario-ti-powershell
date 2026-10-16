@@ -69,7 +69,9 @@ Describe 'Export-InventarioRelatorio' {
         }
 
         It 'usa datas ISO 8601' {
-            ($json | Where-Object ComputerName -eq 'PC-TI-01').UltimoBoot | Should -Be '2026-10-12T07:48:00'
+            # No PowerShell 7 o ConvertFrom-Json ja converte para DateTime, entao confere o texto bruto
+            $bruto = Get-Content -Path (Join-Path $pasta 'd.json') -Raw -Encoding UTF8
+            $bruto | Should -Match '"UltimoBoot":\s*"2026-10-12T07:48:00"'
         }
     }
 
