@@ -14,4 +14,4 @@ Import-Module (Join-Path $PSScriptRoot '..\InventarioTI\InventarioTI.psd1') -For
 
 $null = New-Item -Path $Destino -ItemType Directory -Force
 Get-DadosExemplo |
-    Export-InventarioRelatorio -Path $Destino -Formato HTML -NomeBase 'exemplo-relatorio' -Titulo 'Inventário de TI - exemplo'
+    Export-InventarioRelatorio -Path $Destino -Formato HTML -NomeBase 'exemplo-relatorio' -Titulo 'Inventário de TI - exemplo' -DataReferencia ([datetime]'2026-10-16T09:00:00')

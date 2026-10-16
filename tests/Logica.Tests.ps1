@@ -138,21 +138,27 @@ Describe 'Get-ResumoInventario' {
         . (Join-Path $PSScriptRoot '..\tools\DadosExemplo.ps1')
     }
 
-    It 'conta totais, offline, discos baixos e SO fora de suporte' {
+    It 'conta totais, status e alertas do conjunto de exemplo' {
         $dados = Get-DadosExemplo
         $resumo = InModuleScope InventarioTI -Parameters @{ Dados = $dados } {
             Get-ResumoInventario -Maquinas $Dados -DataReferencia ([datetime]'2026-10-16')
         }
 
-        $resumo.Total | Should -Be 11
-        $resumo.Offline | Should -Be 2
-        $resumo.Online | Should -Be 9
-        # PC-FINANCEIRO-02 (8,0%), PC-COMPRAS-01 (9,2%) e SRV-ARQUIVOS-01 (E: 8,3%)
-        $resumo.DiscoBaixo | Should -Be 3
-        # Windows 10, Windows 7 e Server 2012 R2
-        $resumo.SOForaSuporte | Should -Be 3
+        $resumo.Total | Should -Be 40
+        $resumo.NoAD | Should -Be 39
+        $resumo.Online | Should -Be 31
+        $resumo.Offline | Should -Be 9
+        $resumo.SemAcesso | Should -Be 4
+        $resumo.DiscoBaixo | Should -Be 4
+        $resumo.SOForaSuporte | Should -Be 10
+        $resumo.SemAntivirus | Should -Be 3
+        $resumo.NaoAtivado | Should -Be 2
+        $resumo.RAMBaixa | Should -Be 4
+        $resumo.HDDSistema | Should -Be 6
+        $resumo.PossivelmenteInativo | Should -Be 3
+        $resumo.NuncaInventariado | Should -Be 9
+        $resumo.MaquinasDiscoBaixo.ComputerName | Should -Contain 'SRV-ARQUIVOS-01'
     }
-
     It 'ignora maquinas offline nos alertas' {
         InModuleScope InventarioTI {
             $offline = [pscustomobject]@{ Online = $false; Discos = @(); SistemaOperacional = $null }

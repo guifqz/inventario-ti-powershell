@@ -6,8 +6,9 @@
     .DESCRIPTION
         Recebe os objetos de Get-InventarioMaquina / Invoke-InventarioRede (pipeline ou
         -InputObject) e grava os arquivos na pasta indicada. O HTML e autocontido (CSS
-        embutido, sem scripts nem recursos externos) e traz cartoes-resumo: total de
-        maquinas, offline, discos com pouco espaco livre e sistemas fora de suporte.
+        embutido, JavaScript puro, sem CDN nem fontes externas: funciona offline) e traz cartoes
+        clicaveis, graficos, tabela com busca/ordenacao/filtros, exportacao CSV da visao filtrada e
+        uma gaveta de detalhes por maquina (link direto: arquivo.html#NOME-DO-PC).
 
         O formato Excel exige o modulo ImportExcel (Install-Module ImportExcel). Sem ele,
         o formato e ignorado com um aviso e os demais seguem normalmente.
@@ -31,6 +32,9 @@
 
     .PARAMETER Titulo
         Titulo do relatorio HTML.
+
+    .PARAMETER DataReferencia
+        Data usada nas regras de suporte do SO, inatividade no AD e no carimbo do relatorio. Padrao: agora.
 
     .EXAMPLE
         Invoke-InventarioRede -Path .\computadores.txt | Export-InventarioRelatorio -Path .\saida
@@ -59,7 +63,9 @@
         [ValidateRange(1, 99)]
         [double]$LimiteDisco = 15,
 
-        [string]$Titulo = 'Inventário de TI'
+        [string]$Titulo = 'Inventário de TI',
+
+        [datetime]$DataReferencia = (Get-Date)
     )
 
     begin {
@@ -85,7 +91,7 @@
         $destino = if (Test-Path -LiteralPath $Path) { (Resolve-Path -LiteralPath $Path).ProviderPath } else { $Path }
         $semBom = [System.Text.UTF8Encoding]::new($false)
         $comBom = [System.Text.UTF8Encoding]::new($true)
-        $agora = Get-Date
+        $agora = $DataReferencia
 
         foreach ($f in $formatos) {
             $arquivo = Join-Path -Path $destino -ChildPath ("$NomeBase." + @{ CSV = 'csv'; JSON = 'json'; HTML = 'html'; Excel = 'xlsx' }[$f])

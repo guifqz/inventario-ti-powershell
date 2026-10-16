@@ -1,4 +1,7 @@
-﻿function Format-DataHora {
+﻿$script:DiretorioTemplates = Join-Path -Path $PSScriptRoot -ChildPath 'Templates'
+$script:CamposData = @('ColetadoEm', 'InstaladoEm', 'UltimoBoot', 'BiosData', 'UltimoLogonAD', 'CriadoEmAD')
+
+function Format-DataHora {
     [CmdletBinding()]
     [OutputType([string])]
     param(
@@ -7,6 +10,19 @@
 
     if ($null -eq $Data) { return '' }
     ([datetime]$Data).ToString('yyyy-MM-dd HH:mm')
+}
+
+function Format-Nulo {
+    # Texto para CSV: $null vira vazio, booleanos e listas viram texto legivel.
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [AllowNull()][object]$Valor
+    )
+
+    if ($null -eq $Valor) { return '' }
+    if ($Valor -is [array]) { return (@($Valor) -join ', ') }
+    [string]$Valor
 }
 
 function ConvertTo-RegistroPlano {
@@ -19,35 +35,61 @@ function ConvertTo-RegistroPlano {
     )
 
     process {
+        $alertas = @(Get-AlertasMaquina -Maquina $Maquina -LimiteDisco $LimiteDisco -DataReferencia $DataReferencia)
+        $antivirus = @($Maquina.Antivirus | Where-Object { $null -ne $_ } | ForEach-Object {
+                '{0}{1}' -f $_.Nome, $(if (-not $_.Ativo) { ' (desativado)' } elseif (-not $_.Atualizado) { ' (desatualizado)' } else { '' })
+            })
+        $monitores = @($Maquina.Monitores | Where-Object { $null -ne $_ } | ForEach-Object { ('{0} {1}' -f $_.Fabricante, $_.Modelo).Trim() })
+
         [pscustomobject][ordered]@{
-            Computador      = $Maquina.ComputerName
-            Online          = $Maquina.Online
-            Erro            = $Maquina.Erro
-            Usuario         = $Maquina.Usuario
-            Fabricante      = $Maquina.Fabricante
-            Modelo          = $Maquina.Modelo
-            Serial          = $Maquina.Serial
-            CPU             = $Maquina.CPU
-            RAMGB           = if ($null -ne $Maquina.RAMGB) { ([double]$Maquina.RAMGB).ToString('N1', [cultureinfo]'pt-BR') } else { '' }
-            Discos         = Format-DiscoResumo -Discos $Maquina.Discos
-            AlertaDisco     = @(Get-DiscoEmAlerta -Discos $Maquina.Discos -Limite $LimiteDisco).Count -gt 0
+            Computador         = $Maquina.ComputerName
+            Online             = $Maquina.Online
+            StatusColeta       = $Maquina.StatusColeta
+            Mensagem           = $Maquina.Mensagem
+            Erro               = $Maquina.Erro
+            Fonte              = $Maquina.Fonte
+            Protocolo          = $Maquina.ProtocoloUsado
+            IdadeDadosDias     = Format-Nulo $Maquina.IdadeDadosDias
+            Usuario            = $Maquina.Usuario
+            Fabricante         = $Maquina.Fabricante
+            Modelo             = $Maquina.Modelo
+            Serial             = $Maquina.Serial
+            BIOS               = Format-Nulo $Maquina.BiosVersao
+            CPU                = $Maquina.CPU
+            Threads            = Format-Nulo $Maquina.CPUThreads
+            RAMGB              = if ($null -ne $Maquina.RAMGB) { ([double]$Maquina.RAMGB).ToString('N1', [cultureinfo]'pt-BR') } else { '' }
+            RAMSlots           = if ($null -ne $Maquina.RAMSlotsTotal) { "$($Maquina.RAMSlotsUsados)/$($Maquina.RAMSlotsTotal)" } else { '' }
+            RAMTipo            = Format-Nulo $Maquina.RAMTipo
+            Discos             = Format-DiscoResumo -Discos $Maquina.Discos
+            AlertaDisco        = @(Get-DiscoEmAlerta -Discos $Maquina.Discos -Limite $LimiteDisco).Count -gt 0
             SistemaOperacional = $Maquina.SistemaOperacional
-            VersaoSO        = $Maquina.VersaoSO
-            BuildSO         = $Maquina.BuildSO
-            SuporteSO       = if ($Maquina.Online) { Get-StatusSuporteSO -Nome $Maquina.SistemaOperacional -DataReferencia $DataReferencia } else { '' }
-            InstaladoEm     = Format-DataHora -Data $Maquina.InstaladoEm
-            UltimoBoot      = Format-DataHora -Data $Maquina.UltimoBoot
-            IP              = $Maquina.IP
-            MAC             = $Maquina.MAC
-            Ativacao        = $Maquina.Ativacao
-            SoftwareQtd     = @($Maquina.Software).Count
-            ColetadoEm      = Format-DataHora -Data $Maquina.ColetadoEm
+            VersaoSO           = $Maquina.VersaoSO
+            BuildSO            = $Maquina.BuildSO
+            SuporteSO          = if ($Maquina.Online) { Get-StatusSuporteSO -Nome $Maquina.SistemaOperacional -DataReferencia $DataReferencia } else { '' }
+            InstaladoEm        = Format-DataHora -Data $Maquina.InstaladoEm
+            UltimoBoot         = Format-DataHora -Data $Maquina.UltimoBoot
+            UptimeDias         = Format-Nulo $Maquina.UptimeDias
+            RebootPendente     = Format-Nulo $Maquina.RebootPendente
+            IP                 = $Maquina.IP
+            MAC                = $Maquina.MAC
+            Ativacao           = $Maquina.Ativacao
+            Antivirus          = $antivirus -join '; '
+            Monitores          = $monitores -join '; '
+            Office             = $Maquina.Office
+            AcessoRemoto       = Format-Nulo $Maquina.AcessoRemoto
+            SoftwareQtd        = @($Maquina.Software).Count
+            NoAD               = $Maquina.NoAD
+            OU                 = $Maquina.OU
+            DescricaoAD        = $Maquina.DescricaoAD
+            UltimoLogonAD      = Format-DataHora -Data $Maquina.UltimoLogonAD
+            Alertas            = ($alertas | ForEach-Object { $_.Rotulo }) -join '; '
+            ColetadoEm         = Format-DataHora -Data $Maquina.ColetadoEm
         }
     }
 }
 
 function ConvertTo-RegistroJson {
-    # Mantem a estrutura aninhada (discos, software); datas em ISO 8601 porque o
+    # Mantem a estrutura aninhada (discos, software...); datas em ISO 8601 porque o
     # ConvertTo-Json do 5.1 serializa DateTime no formato /Date(...)/.
     [CmdletBinding()]
     param(
@@ -55,33 +97,155 @@ function ConvertTo-RegistroJson {
     )
 
     process {
-        $iso = { param($d) if ($null -eq $d) { $null } else { ([datetime]$d).ToString('s') } }
-
-        [pscustomobject][ordered]@{
-            ComputerName       = $Maquina.ComputerName
-            Online             = $Maquina.Online
-            Erro               = $Maquina.Erro
-            Hostname           = $Maquina.Hostname
-            Usuario            = $Maquina.Usuario
-            Fabricante         = $Maquina.Fabricante
-            Modelo             = $Maquina.Modelo
-            Serial             = $Maquina.Serial
-            CPU                = $Maquina.CPU
-            CPUNucleos         = $Maquina.CPUNucleos
-            RAMGB              = $Maquina.RAMGB
-            Discos             = @($Maquina.Discos)
-            SistemaOperacional = $Maquina.SistemaOperacional
-            VersaoSO           = $Maquina.VersaoSO
-            BuildSO            = $Maquina.BuildSO
-            InstaladoEm        = & $iso $Maquina.InstaladoEm
-            UltimoBoot         = & $iso $Maquina.UltimoBoot
-            IP                 = $Maquina.IP
-            MAC                = $Maquina.MAC
-            Ativacao           = $Maquina.Ativacao
-            Software           = @($Maquina.Software)
-            ColetadoEm         = & $iso $Maquina.ColetadoEm
+        $saida = [ordered]@{}
+        foreach ($p in $Maquina.PSObject.Properties) {
+            $valor = $p.Value
+            if ($valor -is [datetime]) { $valor = $valor.ToString('s') }
+            elseif ($p.Name -in @('Discos', 'Software', 'Adaptadores', 'AcessoRemoto')) { $valor = @($valor | Where-Object { $null -ne $_ }) }
+            $saida[$p.Name] = $valor
         }
+        [pscustomobject]$saida
     }
+}
+
+function ConvertTo-DataSegura {
+    # No PowerShell 7 o ConvertFrom-Json ja devolve DateTime; no 5.1 vem texto ISO.
+    [CmdletBinding()]
+    [OutputType([datetime])]
+    param(
+        [AllowNull()][object]$Valor
+    )
+
+    if ($null -eq $Valor -or "$Valor" -eq '') { return $null }
+    if ($Valor -is [datetime]) { return $Valor }
+
+    $data = [datetime]::MinValue
+    if ([datetime]::TryParse([string]$Valor, [cultureinfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::None, [ref]$data)) { return $data }
+    $null
+}
+
+function ConvertFrom-RegistroJson {
+    # Reconstroi o registro a partir do JSON gravado; campos ausentes (versao antiga do coletor) ficam no padrao.
+    [CmdletBinding()]
+    [OutputType('InventarioTI.Maquina')]
+    param(
+        [Parameter(Mandatory)][object]$Objeto,
+        [datetime]$DataArquivo = (Get-Date)
+    )
+
+    $nome = [string]$Objeto.ComputerName
+    if ([string]::IsNullOrWhiteSpace($nome)) { throw 'JSON sem ComputerName' }
+
+    $registro = Initialize-RegistroMaquina -ComputerName $nome
+    $listasSempre = @('Discos', 'Software', 'Adaptadores', 'AcessoRemoto')
+    $listasOpcionais = @('Antivirus', 'Monitores')
+
+    foreach ($campo in @($registro.PSObject.Properties.Name)) {
+        $origem = $Objeto.PSObject.Properties[$campo]
+        if (-not $origem) { continue }
+        $valor = $origem.Value
+
+        if ($campo -in $script:CamposData) { $valor = ConvertTo-DataSegura -Valor $valor }
+        elseif ($campo -in $listasSempre) { $valor = @($valor | Where-Object { $null -ne $_ }) }
+        elseif ($campo -in $listasOpcionais) { if ($null -ne $valor) { $valor = @($valor | Where-Object { $null -ne $_ }) } }
+
+        $registro.$campo = $valor
+    }
+
+    if ($null -eq $registro.ColetadoEm) { $registro.ColetadoEm = $DataArquivo }
+    $registro.Online = [bool]$registro.Online
+    $registro.Fonte = 'Local'
+    $registro
+}
+
+function ConvertTo-ModeloRelatorio {
+    # Visao enxuta de uma maquina para o JSON embutido no HTML (alertas ja calculados).
+    [CmdletBinding()]
+    [OutputType([pscustomobject])]
+    param(
+        [Parameter(Mandatory)][object]$Maquina,
+        [double]$LimiteDisco = $script:LimiteDiscoPadrao,
+        [datetime]$DataReferencia = (Get-Date)
+    )
+
+    $iso = { param($d) if ($null -eq $d) { $null } else { ([datetime]$d).ToString('s') } }
+    $alertas = @(Get-AlertasMaquina -Maquina $Maquina -LimiteDisco $LimiteDisco -DataReferencia $DataReferencia)
+
+    $temAntivirus = $null -ne $Maquina.Antivirus
+    $temMonitores = $null -ne $Maquina.Monitores
+
+    [pscustomobject][ordered]@{
+        nome        = $Maquina.ComputerName
+        status      = if ($Maquina.StatusColeta) { $Maquina.StatusColeta } elseif ($Maquina.Online) { 'Coletado' } else { 'Erro' }
+        mensagem    = $Maquina.Mensagem
+        erro        = $Maquina.Erro
+        protocolo   = $Maquina.ProtocoloUsado
+        fonte       = $Maquina.Fonte
+        idadeDias   = $Maquina.IdadeDadosDias
+        coletadoEm  = & $iso $Maquina.ColetadoEm
+        usuario     = $Maquina.Usuario
+        fabricante  = $Maquina.Fabricante
+        modelo      = $Maquina.Modelo
+        serial      = $Maquina.Serial
+        biosVersao  = $Maquina.BiosVersao
+        biosData    = & $iso $Maquina.BiosData
+        cpu         = $Maquina.CPU
+        cpuNucleos  = $Maquina.CPUNucleos
+        cpuThreads  = $Maquina.CPUThreads
+        ramGB       = $Maquina.RAMGB
+        ramUsados   = $Maquina.RAMSlotsUsados
+        ramSlots    = $Maquina.RAMSlotsTotal
+        ramMHz      = $Maquina.RAMVelocidadeMHz
+        ramTipo     = $Maquina.RAMTipo
+        discos      = @($Maquina.Discos | Where-Object { $null -ne $_ } | ForEach-Object {
+                [ordered]@{ u = $_.Unidade; rotulo = $_.Rotulo; tamGB = $_.TamanhoGB; livreGB = $_.LivreGB; pct = $_.PercentualLivre; tipo = $_.Tipo; saude = $_.Saude; sistema = [bool]$_.Sistema }
+            })
+        so          = $Maquina.SistemaOperacional
+        soBuild     = $Maquina.BuildSO
+        soArq       = $Maquina.Arquitetura
+        soInstalado = & $iso $Maquina.InstaladoEm
+        ativacao    = $Maquina.Ativacao
+        boot        = & $iso $Maquina.UltimoBoot
+        uptimeDias  = $Maquina.UptimeDias
+        reboot      = $Maquina.RebootPendente
+        rede        = @($Maquina.Adaptadores | Where-Object { $null -ne $_ } | ForEach-Object {
+                [ordered]@{ nome = $_.Nome; ip = $_.IP; mac = $_.MAC; dhcp = $_.DHCP; gw = $_.Gateway }
+            })
+        ip          = $Maquina.IP
+        av          = if ($temAntivirus) {
+            @($Maquina.Antivirus | Where-Object { $null -ne $_ } | ForEach-Object { [ordered]@{ nome = $_.Nome; ativo = [bool]$_.Ativo; atualizado = [bool]$_.Atualizado } })
+        }
+        else { $null }
+        monitores   = if ($temMonitores) {
+            @($Maquina.Monitores | Where-Object { $null -ne $_ } | ForEach-Object { [ordered]@{ fab = $_.Fabricante; modelo = $_.Modelo; serial = $_.Serial } })
+        }
+        else { $null }
+        office      = $Maquina.Office
+        remoto      = @($Maquina.AcessoRemoto | Where-Object { $null -ne $_ })
+        software    = @($Maquina.Software | Where-Object { $null -ne $_ } | ForEach-Object { [ordered]@{ n = $_.Nome; v = $_.Versao; f = $_.Fabricante } })
+        noAD        = [bool]$Maquina.NoAD
+        dns         = $Maquina.DNSHostName
+        ou          = $Maquina.OU
+        descricaoAD = $Maquina.DescricaoAD
+        soAD        = $Maquina.SistemaOperacionalAD
+        logonAD     = & $iso $Maquina.UltimoLogonAD
+        criadoAD    = & $iso $Maquina.CriadoEmAD
+        habilitado  = $Maquina.HabilitadoAD
+        alertas     = @($alertas | ForEach-Object { [ordered]@{ c = $_.Codigo; g = $_.Gravidade; r = $_.Rotulo; t = $_.Texto; f = $_.Correcao } })
+    }
+}
+
+function ConvertTo-JsonParaHtml {
+    # JSON seguro dentro de <script type="application/json">: sem "</script>", "<!--" nem separadores de linha Unicode.
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [AllowNull()][object]$Objeto
+    )
+
+    $json = ConvertTo-Json -InputObject $Objeto -Depth 8 -Compress
+    $json.Replace('<', '<').Replace('>', '>').Replace('&', '&').
+    Replace([string][char]0x2028, ' ').Replace([string][char]0x2029, ' ')
 }
 
 function ConvertTo-RelatorioHtml {
@@ -94,132 +258,24 @@ function ConvertTo-RelatorioHtml {
         [datetime]$DataReferencia = (Get-Date)
     )
 
-    $h = { param($t) ConvertTo-HtmlSeguro -Texto $t }
-    $lista = @($Maquinas | Where-Object { $null -ne $_ })
-    $resumo = Get-ResumoInventario -Maquinas $lista -LimiteDisco $LimiteDisco -DataReferencia $DataReferencia
+    $lista = @($Maquinas | Where-Object { $null -ne $_ } | Sort-Object -Property ComputerName)
+    $modelos = [object[]]@($lista | ForEach-Object { ConvertTo-ModeloRelatorio -Maquina $_ -LimiteDisco $LimiteDisco -DataReferencia $DataReferencia })
 
-    $linhas = foreach ($m in ($lista | Sort-Object -Property @{ Expression = { -not $_.Online } }, ComputerName)) {
-        if (-not $m.Online) {
-            $motivo = & $h $m.Erro
-            "<tr class=""off""><td>$(& $h $m.ComputerName)</td><td><span class=""tag tag-off"">Offline</span></td><td colspan=""7"" class=""muted"">$motivo</td></tr>"
-            continue
-        }
-
-        $alertas = @(Get-DiscoEmAlerta -Discos $m.Discos -Limite $LimiteDisco)
-        $discos = foreach ($d in $m.Discos) {
-            $baixo = Test-DiscoBaixo -PercentualLivre $d.PercentualLivre -Limite $LimiteDisco
-            $classe = if ($baixo) { 'disk low' } else { 'disk' }
-            "<span class=""$classe"">$(& $h $d.Unidade) $(& $h $d.Tipo) $($d.LivreGB.ToString('N1', [cultureinfo]'pt-BR')) / $($d.TamanhoGB.ToString('N0', [cultureinfo]'pt-BR')) GB ($($d.PercentualLivre.ToString('N1', [cultureinfo]'pt-BR'))% livre)</span>"
-        }
-
-        $suporte = Get-StatusSuporteSO -Nome $m.SistemaOperacional -DataReferencia $DataReferencia
-        $tagSO = switch ($suporte) {
-            'Fora de suporte' { '<span class="tag tag-warn">Fora de suporte</span>' }
-            'Suportado' { '<span class="tag tag-ok">Suportado</span>' }
-            default { '<span class="tag tag-off">Desconhecido</span>' }
-        }
-        $classeLinha = if ($alertas.Count -gt 0 -or $suporte -eq 'Fora de suporte') { 'attn' } else { '' }
-
-        "<tr class=""$classeLinha""><td><strong>$(& $h $m.ComputerName)</strong><div class=""muted"">$(& $h $m.Fabricante) $(& $h $m.Modelo)</div></td>" +
-        "<td><span class=""tag tag-ok"">Online</span></td>" +
-        "<td>$(& $h $m.Usuario)</td>" +
-        "<td>$(& $h $m.SistemaOperacional)<div class=""muted"">build $(& $h $m.BuildSO)</div>$tagSO</td>" +
-        "<td>$(& $h $m.CPU)<div class=""muted"">$(& $h $m.RAMGB) GB RAM</div></td>" +
-        "<td>$($discos -join '<br>')</td>" +
-        "<td>$(& $h $m.IP)<div class=""muted"">$(& $h $m.MAC)</div></td>" +
-        "<td>$(& $h (Format-DataHora -Data $m.UltimoBoot))</td>" +
-        "<td class=""num"">$(@($m.Software).Count)</td></tr>"
+    $meta = [ordered]@{
+        titulo            = $Titulo
+        geradoEm          = $DataReferencia.ToString('s')
+        limiteDisco       = $LimiteDisco
+        limiteRAMGB       = $script:LimiteRAMGBPadrao
+        limiteUptimeDias  = $script:LimiteUptimeDiasPadrao
+        diasInatividadeAD = $script:DiasInatividadeADPadrao
     }
 
-    $alertasDisco = foreach ($m in $resumo.MaquinasDiscoBaixo) {
-        foreach ($d in (Get-DiscoEmAlerta -Discos $m.Discos -Limite $LimiteDisco)) {
-            "<li><strong>$(& $h $m.ComputerName)</strong> $(& $h $d.Unidade) $($d.PercentualLivre.ToString('N1', [cultureinfo]'pt-BR'))% livre, restam $($d.LivreGB.ToString('N1', [cultureinfo]'pt-BR')) GB</li>"
-        }
-    }
-    $alertasSO = foreach ($m in $resumo.MaquinasSOForaSuporte) {
-        "<li><strong>$(& $h $m.ComputerName)</strong>: $(& $h $m.SistemaOperacional)</li>"
-    }
+    $caminho = Join-Path -Path $script:DiretorioTemplates -ChildPath 'relatorio.html'
+    $modelo = [System.IO.File]::ReadAllText($caminho, [System.Text.Encoding]::UTF8)
 
-    $blocoAlertas = ''
-    if ($alertasDisco -or $alertasSO) {
-        $blocoAlertas = '<section class="alerts"><h2>Alertas</h2>'
-        if ($alertasDisco) { $blocoAlertas += "<h3>Disco com menos de $LimiteDisco% livre</h3><ul>$($alertasDisco -join '')</ul>" }
-        if ($alertasSO) { $blocoAlertas += "<h3>Sistema operacional fora de suporte</h3><ul>$($alertasSO -join '')</ul>" }
-        $blocoAlertas += '</section>'
-    }
-
-    $geradoEm = (Get-Date).ToString('dd/MM/yyyy HH:mm')
-
-    @"
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>$(& $h $Titulo)</title>
-<style>
-:root { --bg:#f4f6f8; --card:#fff; --text:#1d2733; --muted:#6b7785; --line:#e1e6eb; --ok:#1a7f4b; --warn:#b45309; --bad:#b42318; --accent:#1f4e79; }
-@media (prefers-color-scheme: dark) {
-  :root { --bg:#10151b; --card:#19212a; --text:#e6ebf0; --muted:#8c98a5; --line:#2a3541; --ok:#4ac08a; --warn:#f0a35e; --bad:#f28b82; --accent:#7fb2e5; }
-}
-* { box-sizing: border-box; }
-body { margin:0; padding:32px 24px 48px; background:var(--bg); color:var(--text); font:14px/1.45 "Segoe UI", system-ui, sans-serif; }
-main { max-width:1280px; margin:0 auto; }
-h1 { margin:0 0 4px; font-size:24px; color:var(--accent); }
-h2 { font-size:17px; margin:28px 0 10px; }
-h3 { font-size:14px; margin:14px 0 6px; }
-.sub { color:var(--muted); margin-bottom:24px; }
-.cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:12px; }
-.card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px 16px; }
-.card .n { font-size:30px; font-weight:600; line-height:1.1; }
-.card .l { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
-.card.warn .n { color:var(--warn); }
-.card.bad .n { color:var(--bad); }
-.card.ok .n { color:var(--ok); }
-.alerts { background:var(--card); border:1px solid var(--line); border-left:4px solid var(--warn); border-radius:8px; padding:4px 18px 12px; }
-.alerts ul { margin:0; padding-left:20px; }
-.wrap { overflow-x:auto; background:var(--card); border:1px solid var(--line); border-radius:8px; }
-table { border-collapse:collapse; width:100%; min-width:980px; }
-th { text-align:left; font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); padding:10px 12px; border-bottom:1px solid var(--line); }
-td { padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
-tr:last-child td { border-bottom:0; }
-tr.attn { background:rgba(180,83,9,.07); }
-tr.off { background:rgba(180,35,24,.06); }
-.muted { color:var(--muted); font-size:12px; }
-.num { text-align:right; font-variant-numeric:tabular-nums; }
-.tag { display:inline-block; padding:1px 8px; border-radius:10px; font-size:11px; font-weight:600; margin-top:3px; }
-.tag-ok { color:var(--ok); border:1px solid var(--ok); }
-.tag-warn { color:var(--warn); border:1px solid var(--warn); }
-.tag-off { color:var(--bad); border:1px solid var(--bad); }
-.disk { display:block; font-size:12px; }
-.disk.low { color:var(--bad); font-weight:600; }
-footer { margin-top:24px; color:var(--muted); font-size:12px; }
-</style>
-</head>
-<body>
-<main>
-<h1>$(& $h $Titulo)</h1>
-<div class="sub">Gerado em $geradoEm</div>
-<div class="cards">
-  <div class="card"><div class="n">$($resumo.Total)</div><div class="l">Máquinas</div></div>
-  <div class="card ok"><div class="n">$($resumo.Online)</div><div class="l">Online</div></div>
-  <div class="card $(if ($resumo.Offline) { 'bad' })"><div class="n">$($resumo.Offline)</div><div class="l">Offline</div></div>
-  <div class="card $(if ($resumo.DiscoBaixo) { 'warn' })"><div class="n">$($resumo.DiscoBaixo)</div><div class="l">Disco &lt; $LimiteDisco% livre</div></div>
-  <div class="card $(if ($resumo.SOForaSuporte) { 'warn' })"><div class="n">$($resumo.SOForaSuporte)</div><div class="l">SO fora de suporte</div></div>
-</div>
-$blocoAlertas
-<h2>Máquinas</h2>
-<div class="wrap">
-<table>
-<thead><tr><th>Computador</th><th>Status</th><th>Usuário</th><th>Sistema operacional</th><th>CPU / RAM</th><th>Discos</th><th>Rede</th><th>Último boot</th><th class="num">Software</th></tr></thead>
-<tbody>
-$($linhas -join "`n")
-</tbody>
-</table>
-</div>
-<footer>InventarioTI - relatório estático, sem dependências externas.</footer>
-</main>
-</body>
-</html>
-"@
+    # Os dados entram por ultimo: nenhum texto vindo deles pode ser tratado como marcador.
+    $modelo.Replace('{{TITULO}}', (ConvertTo-HtmlSeguro -Texto $Titulo)).
+    Replace('{{GERADO_EM}}', $DataReferencia.ToString('dd/MM/yyyy HH:mm')).
+    Replace('{{META_JSON}}', (ConvertTo-JsonParaHtml -Objeto $meta)).
+    Replace('{{DADOS_JSON}}', (ConvertTo-JsonParaHtml -Objeto $modelos))
 }

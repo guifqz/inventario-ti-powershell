@@ -126,20 +126,33 @@ function Get-ResumoInventario {
     $lista = @($Maquinas | Where-Object { $null -ne $_ })
     $online = @($lista | Where-Object { $_.Online })
 
-    $comDiscoBaixo = @($online | Where-Object {
-            @(Get-DiscoEmAlerta -Discos $_.Discos -Limite $LimiteDisco).Count -gt 0
-        })
-    $soForaSuporte = @($online | Where-Object {
-            (Get-StatusSuporteSO -Nome $_.SistemaOperacional -DataReferencia $DataReferencia) -eq 'Fora de suporte'
-        })
+    $comAlerta = foreach ($m in $lista) {
+        [pscustomobject]@{
+            Maquina = $m
+            Codigos = @(Get-AlertasMaquina -Maquina $m -LimiteDisco $LimiteDisco -DataReferencia $DataReferencia | ForEach-Object { $_.Codigo })
+        }
+    }
+    $com = { param($Codigos) @($comAlerta | Where-Object { @($_.Codigos | Where-Object { $_ -in $Codigos }).Count -gt 0 } | ForEach-Object { $_.Maquina }) }
+
+    $comDiscoBaixo = @(& $com @('DISCO_BAIXO'))
+    $soForaSuporte = @(& $com @('SO_FORA_SUPORTE'))
+    $semAcesso = @($lista | Where-Object { $_.StatusColeta -in 'AcessoNegado', 'SemWinRMeDcom', 'Erro' })
 
     [pscustomobject]@{
-        Total           = $lista.Count
-        Online          = $online.Count
-        Offline         = $lista.Count - $online.Count
-        DiscoBaixo      = $comDiscoBaixo.Count
-        SOForaSuporte   = $soForaSuporte.Count
-        LimiteDisco     = $LimiteDisco
+        Total                 = $lista.Count
+        NoAD                  = @($lista | Where-Object { $_.NoAD }).Count
+        Online                = $online.Count
+        Offline               = $lista.Count - $online.Count
+        SemAcesso             = $semAcesso.Count
+        DiscoBaixo            = $comDiscoBaixo.Count
+        SOForaSuporte         = $soForaSuporte.Count
+        SemAntivirus          = @(& $com @('AV_AUSENTE', 'AV_DESATIVADO')).Count
+        NaoAtivado            = @(& $com @('NAO_ATIVADO')).Count
+        RAMBaixa              = @(& $com @('RAM_BAIXA')).Count
+        HDDSistema            = @(& $com @('DISCO_SISTEMA_HDD')).Count
+        PossivelmenteInativo  = @(& $com @('AD_INATIVO')).Count
+        NuncaInventariado     = @(& $com @('NUNCA_INVENTARIADO')).Count
+        LimiteDisco           = $LimiteDisco
         MaquinasDiscoBaixo    = $comDiscoBaixo
         MaquinasSOForaSuporte = $soForaSuporte
     }

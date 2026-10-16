@@ -21,12 +21,8 @@ function Get-NomesDoAD {
         [Parameter(Mandatory)][string]$OrganizationalUnit
     )
 
-    if (-not (Get-Command -Name Get-ADComputer -ErrorAction SilentlyContinue)) {
-        throw 'O modulo ActiveDirectory (RSAT) nao esta disponivel. Instale o RSAT ou use -ComputerName / -Path.'
-    }
-
-    Get-ADComputer -SearchBase $OrganizationalUnit -Filter 'Enabled -eq $true' |
-        Select-Object -ExpandProperty Name
+    Get-ComputadoresAD -SearchBase $OrganizationalUnit |
+        ForEach-Object { if ($_.DNSHostName) { $_.DNSHostName } else { $_.Nome } }
 }
 
 function Resolve-AlvoInventario {

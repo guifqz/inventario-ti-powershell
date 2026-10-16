@@ -52,6 +52,70 @@ function Remove-SessaoCim {
     }
 }
 
+function Open-SessaoCim {
+    # Abre a sessao CIM e confirma que ela responde (sessoes DCOM sao preguicosas: o erro so aparece na primeira consulta).
+    # Auto: tenta WSMan e, se falhar por motivo que nao seja acesso negado, cai para DCOM.
+    # Nunca lanca: a falha volta em ErroWsman/ErroDcom para Resolve-StatusColeta classificar.
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$ComputerName,
+        [pscredential]$Credential,
+        [ValidateSet('Auto', 'Wsman', 'Dcom')][string]$Protocolo = 'Auto',
+        [int]$TimeoutSegundos = 20,
+        [Nullable[bool]]$WinRMAberto,
+        [Nullable[bool]]$RpcAberto
+    )
+
+    $resultado = [pscustomobject]@{ Sessao = $null; ProtocoloUsado = $null; ErroWsman = $null; ErroDcom = $null }
+    $base = @{ ComputerName = $ComputerName; TimeoutSegundos = $TimeoutSegundos }
+    if ($Credential) { $base.Credential = $Credential }
+
+    $tentar = {
+        param($Modo)
+        $sessao = New-SessaoCim @base -Protocolo $Modo
+        try {
+            $null = Get-DadosCim -ClassName Win32_ComputerSystem -Sessao $sessao | Select-Object -First 1
+        }
+        catch {
+            Remove-SessaoCim -Sessao $sessao
+            throw
+        }
+        $sessao
+    }
+
+    if ($Protocolo -in 'Auto', 'Wsman') {
+        if ($WinRMAberto -eq $false) {
+            $resultado.ErroWsman = 'Porta 5985 (WinRM) inacessível'
+        }
+        else {
+            try {
+                $resultado.Sessao = & $tentar 'Wsman'
+                $resultado.ProtocoloUsado = 'WinRM'
+                return $resultado
+            }
+            catch {
+                $resultado.ErroWsman = $_.Exception.Message.Trim()
+            }
+        }
+
+        if ($Protocolo -eq 'Wsman' -or (Get-ClasseErro -Mensagem $resultado.ErroWsman) -eq 'AcessoNegado') { return $resultado }
+    }
+
+    if ($RpcAberto -eq $false) {
+        $resultado.ErroDcom = 'Porta 135 (RPC) inacessível'
+        return $resultado
+    }
+
+    try {
+        $resultado.Sessao = & $tentar 'Dcom'
+        $resultado.ProtocoloUsado = 'DCOM'
+    }
+    catch {
+        $resultado.ErroDcom = $_.Exception.Message.Trim()
+    }
+    $resultado
+}
+
 function Invoke-RegistroCim {
     [CmdletBinding()]
     param(
